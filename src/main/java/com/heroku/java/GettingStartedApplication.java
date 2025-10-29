@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @SpringBootApplication
 @Controller
@@ -27,16 +31,20 @@ public class GettingStartedApplication {
     }
 
     @GetMapping("/database")
-    String database(Map<String, Object> model) {
+    public String database(Map<String, Object> model) {
         try (Connection connection = dataSource.getConnection()) {
-            final var statement = connection.createStatement();
+            Statement statement = connection.createStatement();
+            // Keep original table
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
             statement.executeUpdate("INSERT INTO ticks VALUES (now())");
 
-            final var resultSet = statement.executeQuery("SELECT tick FROM ticks");
-            final var output = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery("SELECT tick FROM ticks");
+            List<String> output = new ArrayList<>();
+
             while (resultSet.next()) {
-                output.add("Read from DB: " + resultSet.getTimestamp("tick"));
+                // Add random string to output
+                output.add("Read from DB: " + resultSet.getTimestamp("tick") +
+                           " / " + getRandomString());
             }
 
             model.put("records", output);
@@ -46,6 +54,18 @@ public class GettingStartedApplication {
             model.put("message", t.getMessage());
             return "error";
         }
+    }
+
+    // Random string generator
+    private String getRandomString() {
+        int length = 10;
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder(length);
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     public static void main(String[] args) {
