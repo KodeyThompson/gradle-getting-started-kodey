@@ -33,8 +33,10 @@ public class GettingStartedApplication {
     @GetMapping("/database")
     public String database(Map<String, Object> model) {
         try (Connection connection = dataSource.getConnection()) {
+            // Log your name every time the method is executed
+            System.out.println("Kodey Thompson visited /database");
+
             Statement statement = connection.createStatement();
-            // Keep original table
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
             statement.executeUpdate("INSERT INTO ticks VALUES (now())");
 
@@ -42,9 +44,8 @@ public class GettingStartedApplication {
             List<String> output = new ArrayList<>();
 
             while (resultSet.next()) {
-                // Add random string to output
-                output.add("Read from DB: " + resultSet.getTimestamp("tick") +
-                           " / " + getRandomString());
+                output.add("Read from DB: " + resultSet.getTimestamp("tick") + 
+                        " / " + getRandomString());
             }
 
             model.put("records", output);
